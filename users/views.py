@@ -7,6 +7,7 @@ from .models import User
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
 # Create your views here.
 
 class CreateUserView(generics.CreateAPIView):
@@ -15,19 +16,26 @@ class CreateUserView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
-       
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        try:
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
 
-        # Customize the response data
-        response_data = {
-            "message": "Account created successfully",
-            "user": serializer.data
-        }
+            # Customize the response data
+            response_data = {
+                "message": "Account created successfully",
+                "user": serializer.data
+            }
 
-        # Return a Response object with the custom data and status code
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            # Return a Response object with the custom data and status code
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        except ValidationError as e:
+            # Extract the error message for the email field
+            email_errors = e.detail.get('email', [])
+            if email_errors:
+                return Response({"error": email_errors[0]}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"error": "Invalid data"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):

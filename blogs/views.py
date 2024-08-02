@@ -41,7 +41,7 @@ class BlogListAPIView(APIView):
     
     def get(self, request):
         try:
-            blogs = Post.objects.all()
+            blogs = Post.objects.all().order_by('-updated_at')
             if not blogs:
                 return Response(
                     {"message": "You have no blogs."},
@@ -103,7 +103,7 @@ class BlogDetailUpdateDeleteAPIView(APIView):
                     {"error": "You are not authorized to update this blog."},
                     status=status.HTTP_403_FORBIDDEN
                 )
-            blog_serializer = PostSerializer(blog, data=request.data)
+            blog_serializer = PostSerializer(blog, data=request.data, partial=True)
             if blog_serializer.is_valid():
                 blog_serializer.save()
                 return Response(

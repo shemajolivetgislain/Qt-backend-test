@@ -107,5 +107,7 @@ Tools used to build the projects:
 
 - Python Django
 - Django Restframework
+- PostgreSQL
+- Jwt authentication
 
 

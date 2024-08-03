@@ -1,10 +1,12 @@
 from rest_framework.response import Response
 from rest_framework import generics, status
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, ReadUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import User
 from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 
 class CreateUserView(generics.CreateAPIView):
@@ -51,3 +53,21 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 'refresh_token': refresh_token,
             }
         return response
+    
+
+    # Listing of users
+class ListUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            users = User.objects.all()
+            serializer = ReadUserSerializer(users, many=True)
+            message = "List of all users retrieved successfully."
+            data = {
+                "message": message,
+                "users": serializer.data
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

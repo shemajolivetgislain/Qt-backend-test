@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from django.http import JsonResponse
 from .models import Post, Comment
-from .serializers import PostSerializer, ReadPostSerializer, CommentSerializer
+from .serializers import PostSerializer, ReadPostSerializer, ReadCommentSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
@@ -64,11 +64,11 @@ class BlogDetailAPIView(APIView):
     def get(self, request, blog_id):
         try:
             blog = Post.objects.get(id=blog_id)
-            post_serializer = PostSerializer(blog)
+            post_serializer = ReadPostSerializer(blog)
             
             # Fetch and serialize related comments
             comments = Comment.objects.filter(post=blog)
-            comment_serializer = CommentSerializer(comments, many=True)
+            comment_serializer = ReadCommentSerializer(comments, many=True)
             
             response_data = {
                 "message": "Blog retrieved successfully",
